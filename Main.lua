@@ -540,7 +540,7 @@ local function info()
     if lp == nil or style:GetValue() == 4 then
         return
     else
-        draw.TextShadow( x+15, y, "Luna" ) -- Ξ | XI
+        draw.TextShadow( x+15, y, "Luna" )
         draw.TextShadow( x+140, y, os.date("%H:%M") )
         draw.TextShadow( x, y+20, "Name: " .. name )
         draw.TextShadow( x, y+35, "UID: " .. uid )
