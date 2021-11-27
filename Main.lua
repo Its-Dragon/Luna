@@ -319,7 +319,7 @@ local function info()
     local CenterY = y1 / 2
 
     if lp == nil or style:GetValue() == 4 then 
-        draw.TextShadow( 5, 5, "autohop.exe" )
+        draw.TextShadow( 5, 5, "Luna" )
     else
         if style:GetValue() == 0 then -- Classic
             -- Box Stuff For Main Window
