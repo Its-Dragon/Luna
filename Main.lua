@@ -5,9 +5,9 @@ local uid = cheat.GetUserID()
 local name = cheat.GetUserName()
 local real = nil
 local lby = nil
-local kills = nil
-local deaths = nil
-local kd = nil
+local kills = "nil"
+local deaths = "nil"
+local kd = "nil"
 local ping = ""
 local defusing = false
 local defusestatus = "Not Defused"
@@ -22,31 +22,74 @@ local alpha = {}
 local players = {activity = {}}
 local round_ended = false
 local ip = ""
+local screenX, screenY = draw.GetScreenSize(x,y)
+local switch = false
+local color = 1
+local time = globals.CurTime()
+local origcolor = client.GetConVar( "cl_hud_color" )
 
 local ref1 = gui.Reference( "Misc", "General", "Extra" )
 local ref2 = gui.Reference( "Settings", "Theme" )
 local Luna_group = gui.Groupbox(ref2, "Luna", 328, 415, 295, 400)
 local ref3 = gui.Reference( "Settings", "Theme", "Luna" )
 local ref4 = gui.Reference( "Visuals", "Overlay", "Enemy" )
-local ref5 = gui.Reference("Visuals", "Other", "Effects" )
+local ref5 = gui.Reference( "Visuals", "Other", "Effects" )
+local ref6 = gui.Reference( "Misc", "Movement", "Jump" )
+local ref7 = gui.Reference( "Visuals", "Other", "Extra" )
 
 local style = gui.Combobox( ref3, "theme.luna.style", "Style", "Classic", "Modern", "Light", "Dark", "Hide" )
-
-local sniperxhair = gui.Checkbox( ref5, "lua.xhair", "Sniper Crosshair", false )
-sniperxhair:SetDescription("Show crosshair for your sniper.")
-
+local logo = gui.Combobox( ref3, "theme.luna.logo", "Logo", "Classic", "Blue", "Blue/Purple Gradient", "Purple Gradient", "White" )
 local linecolor = gui.ColorPicker( ref3, "linecolor", "Line", 255, 0, 206, 255 )
 
+local sniperxhair = gui.Checkbox( ref7, "vis.xhair", "Sniper Crosshair", false )
+sniperxhair:SetDescription("Show crosshair for your sniper.")
 local headdotcheck = gui.Checkbox( ref4, "vis.headdot", "Head Dot", false )
 headdotcheck:SetDescription("Draws dot where players head is.")
 local snaplinespos = gui.Combobox( ref4, "vis.snaplinespos", "Snaplines Position", "Off", "Top", "Center", "Bottom")
 snaplinespos:SetDescription("Draws lines to player.")
-local check = gui.Checkbox( ref5, "retainviewmodel", "Retain Viewmodel", false )
-check:SetDescription("Retains your viewmodel when scoped.")
+local keystrokes = gui.Checkbox( ref7, "vis.keystrokes", "Keystrokes Indicator", false )
+keystrokes:SetDescription("Displays your keystrokes on screen.")
+local keystrokeXslider = gui.Slider( ref7, "vis.keystrokeXslider", "Keystrokes X", 130, 0, screenX )
+local keystrokeYslider = gui.Slider( ref7, "vis.keystrokeYslider", "Keystrokes Y", 580, 0, screenY )
+local rainbowhudcheck = gui.Checkbox( ref7, "vis.rainbowhud", "Rainbow HUD", false )
+rainbowhudcheck:SetDescription("Cycles the colors of your HUD.")
+local rainbowhudslider = gui.Slider( ref7, "rainbowhud.interval", "Rainbow Hud Interval", 1, 0, 5, 0.05)
+rainbowhudslider:SetDescription("How fast the colors cycle.")
 
-local logo = http.Get( "https://cdn.discordapp.com/attachments/878593887113986048/878593949332291584/Luna2.png" )
-local logoimgRGBA1, logoimgWidth1, logoimgHeight1 = common.DecodePNG( logo )
+local retainviewmodelcheck = gui.Checkbox( ref5, "vis.retainviewmodel", "Retain Viewmodel", false )
+retainviewmodelcheck:SetDescription("Retains your viewmodel when scoped.")
+
+local ljcheck = gui.Checkbox( ref6, "misc.lj", "Long Jump On Edge Jump", false )
+ljcheck:SetDescription("Performs a long jump on edge jump.")
+local ljmode = gui.Combobox( ref6, "misc.ljmode", "Long Jump Mode", "Default", "-forward", "-backward", "-left", "-right" )
+ljmode:SetDescription("Select style of long jump.")
+local edgebug = gui.Keybox( ref6, "misc.edgebugbind", "Edge Bug", 0x00 )
+edgebug:SetDescription("Attempts to slide off the edge of an object.")
+local bhophitchanceslider = gui.Slider( ref6, "bhophitchance", "Bhop Hitchance", 100, 0, 100 )
+bhophitchanceslider:SetDescription("The chance percentage for your bhop to land.")
+
+local doorspamkey = gui.Keybox( ref1, "misc.doorspam", "Door Spam Key", 0x00 )
+doorspamkey:SetDescription("Spams +use command on key.")
+
+local logo1 = http.Get( "https://cdn.discordapp.com/attachments/878593887113986048/878593949332291584/Luna2.png" ) -- Classic
+local logoimgRGBA1, logoimgWidth1, logoimgHeight1 = common.DecodePNG( logo1 )
 local logotexture1 = draw.CreateTexture( logoimgRGBA1, logoimgWidth1, logoimgHeight1 )
+
+local logo2 = http.Get( "https://cdn.discordapp.com/attachments/894328569952604170/913166310555418676/Luna1.png" ) -- Blue
+local logoimgRGBA1, logoimgWidth1, logoimgHeight1 = common.DecodePNG( logo2 )
+local logotexture2 = draw.CreateTexture( logoimgRGBA1, logoimgWidth1, logoimgHeight1 )
+
+local logo3 = http.Get( "https://cdn.discordapp.com/attachments/894328569952604170/913168169072463972/Luna.png" ) -- Blue/Purple Gradient
+local logoimgRGBA1, logoimgWidth1, logoimgHeight1 = common.DecodePNG( logo3 )
+local logotexture3 = draw.CreateTexture( logoimgRGBA1, logoimgWidth1, logoimgHeight1 )
+
+local logo4 = http.Get( "https://cdn.discordapp.com/attachments/894328569952604170/913168169898741810/Lunasb.png" ) -- Purple Gradient
+local logoimgRGBA1, logoimgWidth1, logoimgHeight1 = common.DecodePNG( logo4 )
+local logotexture4 = draw.CreateTexture( logoimgRGBA1, logoimgWidth1, logoimgHeight1 )
+
+local logo5 = http.Get( "https://cdn.discordapp.com/attachments/894328569952604170/913168170448212038/LunaW.png" ) -- White
+local logoimgRGBA1, logoimgWidth1, logoimgHeight1 = common.DecodePNG( logo5 )
+local logotexture5 = draw.CreateTexture( logoimgRGBA1, logoimgWidth1, logoimgHeight1 )
 
 local function headdot()
     if gui.GetValue("esp.master") and headdotcheck:GetValue() then
@@ -67,10 +110,21 @@ local function headdot()
 end
 
 local function viewmodeltoggle()
-    if check:GetValue() == true then
+    if retainviewmodelcheck:GetValue() == true then
         client.SetConVar("fov_cs_debug", 90, true);
-    elseif check:GetValue() == false then
+    elseif retainviewmodelcheck:GetValue() == false then
         client.SetConVar("fov_cs_debug", 0, true);
+    end
+end
+
+local function RainbowHUD()
+    if rainbowhudcheck:GetValue() then
+        client.Command( "cl_hud_color " .. color, true )
+        if globals.CurTime() - rainbowhudslider:GetValue() >= time then
+            color = color + 1
+            time = globals.CurTime()
+        end
+        if color > 9 then color = 1 end
     end
 end
 
@@ -126,14 +180,74 @@ local function props()
     else end
 end
 
+local function doorspam(cmd)
+    if doorspamkey:GetValue() ~= 0 then
+        if input.IsButtonDown( doorspamkey:GetValue() ) then
+            if switch then client.Command("+use", true)
+            else client.Command("-use", true) end
+            switch = not switch
+        else
+            if not switch then client.Command("+use", true) end
+        end
+    end
+end
+
 local function create_move(cmd)
     local local_player = entities.GetLocalPlayer()
-
     if not local_player == nil or local_player:IsAlive() == true then
         real = cmd:GetViewAngles().y 
         lby = local_player:GetProp("m_flLowerBodyYawTarget");
     end
+
+    if (gui.GetValue( "misc.autojump" ) ~= 0 or bit.band(cmd.buttons, 2) == 0 or
+        bit.band(local_player:GetPropInt("m_fFlags"), 1) == 0 or math.random(1, 100) >= bhophitchanceslider:GetValue()) then return end
+    cmd.buttons = cmd.buttons - 2
 end
+
+local function edgebug_createmove(UserCmd, lp) -- pasted edgebug and long jump but idc tbh
+    local lp = entities.GetLocalPlayer()
+    local flags = lp:GetPropInt("m_fFlags")
+
+    if flags == nil and edgebug:GetValue() then
+        return
+    end
+
+    local onground = bit.band(flags, 1) ~= 0
+
+    if edgebug:GetValue() == 0 then
+        return
+    end
+
+    if onground and input.IsButtonDown( edgebug:GetValue() ) then
+        UserCmd:SetButtons(4)
+        return
+    end
+end
+
+callbacks.Register("CreateMove", function(cmd) 
+    local edgejump = gui.GetValue("misc.edgejump");
+    local lp = entities.GetLocalPlayer()
+    edgebug_createmove(cmd,lp)
+
+    if ljcheck:GetValue() and edgejump ~= 0 then
+        local flags = lp:GetPropInt("m_fFlags")
+        if edgejump ~= 0 and flags and flags == 256 and input.IsButtonDown(edgejump) then
+            cmd:SetButtons(86)
+            if (ljmode:GetValue() == 1) then
+				client.Command("-forward", true)
+			end	
+			if (ljmode:GetValue() == 2) then
+				client.Command("-back", true)
+			end
+			if (ljmode:GetValue() == 3) then
+				client.Command("-moveright", true)
+			end
+			if (ljmode:GetValue() == 4) then
+				client.Command("-moveleft", true)
+			end
+        end
+    end
+end)
 
 local function menu_weapon(var)
     local w = var:match("%a+"):lower()
@@ -194,6 +308,8 @@ local function info()
     local y = 10
     local menuX = x-5
     local menuY = y-5
+    local keystrokeX = keystrokeXslider:GetValue()
+    local keystrokeY = keystrokeYslider:GetValue()
     local styler = 255
     local styleg = 255
     local styleb = 255
@@ -202,8 +318,8 @@ local function info()
     local CenterX = x1 / 2
     local CenterY = y1 / 2
 
-    if lp == nil or style:GetValue() == 5 then 
-        draw.TextShadow( 5, 5, "Thank you for using my LUA, the window is currently hidden." )
+    if lp == nil or style:GetValue() == 4 then 
+        draw.TextShadow( 5, 5, "autohop.exe" )
     else
         if style:GetValue() == 0 then -- Classic
             -- Box Stuff For Main Window
@@ -365,7 +481,7 @@ local function info()
     -- Bomb Stuff
     -- fuck bomb all my homies hate bomb - no like fr this shit gave me so much trouble
     local server = engine.GetServerIP()
-    if lp == nil then return
+    if lp == nil or style:GetValue() == 4 then return
     elseif server ~= nil then
         if bomb_planted then
             local bomb = entities.FindByClass('CPlantedC4')[1]
@@ -396,7 +512,7 @@ local function info()
 
     -- HP Stuff
     local server = engine.GetServerIP()
-    if lp == nil then return
+    if lp == nil or style:GetValue() == 4 then return
     elseif server ~= nil then
             if bomb_planted then
                 local Player = entities:GetLocalPlayer()
@@ -421,7 +537,7 @@ local function info()
     -- HP Stuff
 
     -- Main Window
-    if lp == nil then
+    if lp == nil or style:GetValue() == 4 then
         return
     else
         draw.TextShadow( x+15, y, "Luna" ) -- Ξ | XI
@@ -447,8 +563,81 @@ local function info()
         draw.TextShadow( x, y+290, "Smooth: " .. math.floor(smooth * 100) / 100)
         -- Main Window
         draw.Color( 255, 255, 255, 255 )
-        draw.SetTexture( logotexture1 )
+        if logo:GetValue() == 0 then
+            draw.SetTexture( logotexture1 )
+        elseif logo:GetValue() == 1 then
+            draw.SetTexture( logotexture2 )
+        elseif logo:GetValue() == 2 then
+            draw.SetTexture( logotexture3 )
+        elseif logo:GetValue() == 3 then
+            draw.SetTexture( logotexture4 )
+        elseif logo:GetValue() == 4 then
+            draw.SetTexture( logotexture5 )
+        end
         draw.FilledRect( x-4, y-3, x+14, y+13 )
+    end
+
+    if keystrokes:GetValue() then
+        if input.IsButtonDown(87) then
+            draw.Color(255, 255, 255, 255)
+            draw.Text(keystrokeX, keystrokeY, "W") 
+        else 
+            draw.Color(255, 255, 255, 100)
+            draw.Text(keystrokeX+6, keystrokeY, "_") 
+            draw.Color(255, 255, 255, 255)
+        end
+
+        if input.IsButtonDown(83) then
+            draw.Color(255, 255, 255, 255)
+            draw.Text(keystrokeX+6, keystrokeY+30, "S") 
+        else
+            draw.Color(255, 255, 255, 100)
+            draw.Text(keystrokeX+6, keystrokeY+30, "_") 
+        end
+
+        if input.IsButtonDown(65) then
+            draw.Color(255, 255, 255, 255)
+            draw.Text(keystrokeX-33, keystrokeY+30, "A") 
+        else
+            draw.Color(255, 255, 255, 100)
+            draw.Text(keystrokeX-33, keystrokeY+30, "_") 
+        end
+
+        if input.IsButtonDown(68) then
+            draw.Color(255, 255, 255, 255)
+            draw.Text(keystrokeX+45, keystrokeY+30, "D") 
+        else
+            draw.Color(255, 255, 255, 100)
+            draw.Text(keystrokeX+45, keystrokeY+30, "_") 
+        end
+
+        if input.IsButtonDown(32) then
+            draw.Color(255, 255, 255, 255)
+            draw.Text(keystrokeX+45, keystrokeY, "J") 
+        else
+            draw.Color(255, 255, 255, 100)
+            draw.Text(keystrokeX+45, keystrokeY, "_") 
+        end
+
+        if input.IsButtonDown(16) then
+            draw.Color(255, 255, 255, 255)
+            draw.Text(keystrokeX-33, keystrokeY, "C") 
+        else
+            draw.Color(255, 255, 255, 100)
+            draw.Text(keystrokeX-33, keystrokeY, "_") 
+        end
+
+        if input.IsButtonDown(65) and input.IsButtonDown(68) then
+            draw.Color(255, 0, 0, 255)
+            draw.Text(keystrokeX+45, keystrokeY+30, "D") 
+            draw.Text(keystrokeX-33, keystrokeY+30, "A") 
+        end
+
+        if input.IsButtonDown(87) and input.IsButtonDown(83) then
+            draw.Color(255, 0, 0, 255)
+            draw.Text(keystrokeX, keystrokeY, "W") 
+            draw.Text(keystrokeX+6, keystrokeY+30, "S") 
+        end
     end
 end
 
@@ -507,8 +696,11 @@ local function CrosshairDraw()
         end
         enemyoov = enemycount - enemyinview -- somehow this works???
     end
-    draw.Color( styler, styleg, styleb, 255 )
-    draw.TextShadow( CenterX+49, CenterY+40, "Out of View: " .. enemyoov ) --drawing how many enemies are oov
+    if lp == nil or style:GetValue() == 4 then return
+    else
+        draw.Color( styler, styleg, styleb, 255 )
+        draw.TextShadow( CenterX+49, CenterY+40, "Out of View: " .. enemyoov ) --drawing how many enemies are oov
+    end
     --draw.TextShadow( CenterX+49, CenterY+55, "In View: " .. enemyinview )
     --draw.TextShadow( CenterX+49, CenterY+70, "Enemies: " .. enemycount )
     -- Enemy Counter
@@ -574,23 +766,64 @@ callbacks.Register("FireGameEvent", "EventHookB", EventHook);
 callbacks.Register( "Draw", "HeadDot", headdot )
 callbacks.Register( "Draw", "Snaplines", snaplines )
 callbacks.Register( "CreateMove", viewmodeltoggle )
+callbacks.Register( "CreateMove", doorspam )
+callbacks.Register( "Draw", RainbowHUD )
+callbacks.Register( "Unload", function()
+    client.Command( "cl_hud_color " .. orig, true )
+end )
 
--- This code is extremely shit and not done efficiently or correctly by any means.
--- A lot needs to be done/fixed properly since this is my first "big project" with LUA.
--- Recode Goals:
--- Put all "Draw" functions in one
--- Code everything more efficiently (goes hand-in-hand with putting "Draw" functions in one since I have all the values set in the one func and I don't have to set them multiple times in diff funcs)
--- (Hopefully) Find better ways to do my functions
--- Time Frame: Hopefully finish this entire LUA with everything I want to add by January 1st, 2022 (4 Months and 5 Days as of 8/27/21).
--- Likely won't release to anyone except friends (if they have Aimware) like Nshout, RDP/ThatOneCodeDev, Exodus, and Rainy. Maybe make it invite only through Luna SB? Requires checking cheat.GetUserName() and cheat.GetUserID() for whoever is invited and obfuscating so people can't edit it themselves.
+--[[ 
 
--- To do --
--- Add Legitbot/Ragebot Check For Info Switch
+This code is extremely shit and not done efficiently or correctly by any means.
+A lot needs to be done/fixed properly since this is my first "big project" with LUA.
 
--- Changelog --
--- Added Retain Viewmodel (10/22/21)
--- Fixed Most Errors (10/22/21)
--- Added Main Menu Check (10/22/21)
--- Changed Background of Modern Theme (11/17/21)
--- Fixed Main Menu Check (11/18/21)
--- Improved FPS Slightly (11/21/21)
+        Recode Goals:
+Put all "Draw" functions in one
+Code everything more efficiently (goes hand-in-hand with putting "Draw" functions in one since I have all the values set in the one func and I don't have to set them multiple times in diff funcs)
+(Hopefully) Find better ways to do my functions
+Time Frame: Hopefully finish this entire LUA with everything I want to add by January 1st, 2022 (4 Months and 5 Days as of 8/27/21).
+Likely won't release to anyone except friends (if they have Aimware) like Nshout, RDP/ThatOneCodeDev, Exodus, and Rainy. Maybe make it invite only through Luna SB? Requires checking cheat.GetUserName() and cheat.GetUserID() for whoever is invited and obfuscating so people can't edit it themselves.
+
+        To do
+Add Legitbot/Ragebot Check For Info Switch
+Add Player Trail
+Add Velocity Graph
+
+        Changelog
+
+Added Retain Viewmodel (10/22/21)
+Fixed Most Errors (10/22/21)
+Added Main Menu Check (10/22/21)
+
+Changed Background of Modern Theme (11/17/21)
+
+Fixed Main Menu Check (11/18/21)
+
+Improved FPS Slightly (11/21/21)
+
+Added Edgebug (11/23/21)
+Added Long Jump (11/23/21)
+Added Keystrokes Indicator (11/23/21)
+
+Added 4 new logos (11/24/21)
+Added Bhop Hitchance (11/24/21)
+Added Door Spam (11/24/21)
+Added Rainbow HUD (11/24/21)
+Fixed error with "kills" value (11/24/21)
+Changed watermark with "Hide" style option (11/24/21)
+
+        Credits:
+        - stacky
+        - Cheeseot
+        - aiyu
+        - zack
+        - 2878713023
+        - Sestain
+        - Giperfast.tk
+        - Nshout
+        - ThatOneCodeDev (Huey)
+        - GLadiator
+        - Rickyy
+        - HicaroP4
+        - Scape
+]]
