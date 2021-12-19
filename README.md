@@ -18,4 +18,5 @@ Features:
 - Inventory Unlock
 - Retain Viewmodel
 - Enemy FOV Counter
+- Engine Radar
 - Multiple Styles & Logos for Info Window
