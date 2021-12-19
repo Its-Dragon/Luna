@@ -842,10 +842,10 @@ A lot needs to be done/fixed properly since this is my first "big project" with 
 
         Recode Goals:
 Put all "Draw" functions in one
-Code everything more efficiently (goes hand-in-hand with putting "Draw" functions in one since I have all the values set in the one func and I don't have to set them multiple times in diff funcs)
+Code everything more efficiently
 (Hopefully) Find better ways to do my functions
 Time Frame: Hopefully finish this entire LUA with everything I want to add by January 1st, 2022 (4 Months and 5 Days as of 8/27/21).
-Likely won't release to anyone except friends (if they have Aimware) like Nshout, RDP/ThatOneCodeDev, Exodus, and Rainy. Maybe make it invite only through Luna SB? Requires checking cheat.GetUserName() and cheat.GetUserID() for whoever is invited and obfuscating so people can't edit it themselves.
+After I get everything I want into the LUA, I'll start recoding it.
 
         To do
 Add Legitbot/Ragebot Check For Info Switch
