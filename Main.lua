@@ -67,6 +67,8 @@ local recoilcrosshair = gui.Checkbox( ref7, "recoilcrosshair", "Recoil Crosshair
 recoilcrosshair:SetDescription("Makes your crosshair react to recoil. (Risky)")
 local inventoryunlock = gui.Checkbox( ref1, "inventoryunlock", "Inventory Unlock", false )
 inventoryunlock:SetDescription("Unlocks your inventory in casual.")
+local engineradar = gui.Checkbox( ref7, "engineradar", "Engine Radar", false )
+engineradar:SetDescription("Shows enemies on your radar. (Risky)")
 
 local retainviewmodelcheck = gui.Checkbox( ref5, "vis.retainviewmodel", "Retain Viewmodel", false )
 retainviewmodelcheck:SetDescription("Retains your viewmodel when scoped.")
@@ -214,6 +216,14 @@ local function snaplines()
             end
         end
     end
+end
+
+local function EngineRadar()
+	if engineradar:GetValue() then
+		for index, Player in pairs(entities.FindByClass("CCSPlayer")) do
+			Player:SetProp("m_bSpotted", 1);
+		end
+	end
 end
 
 local function props()
@@ -819,6 +829,7 @@ callbacks.Register( "Draw", RainbowHUD );
 callbacks.Register( "Draw", UnlockInventory )
 callbacks.Register( "CreateMove", RecoilCrosshair )
 callbacks.Register( "CreateMove", ForceCrosshair )
+callbacks.Register( "Draw", EngineRadar )
 callbacks.Register( "Draw", linecolorstyle )
 callbacks.Register( "Unload", function()
     client.Command( "cl_hud_color " .. origcolor, true )
@@ -875,6 +886,7 @@ Added Sniper Crosshair Color (12/18/21)
 Added Line Style (12/18/21) | Note: Only static works currently
 Changed Line Color Picker (12/18/21)
 Changed Background of "Light" Style (12/18/21)
+Added Engine Radar (12/18/21)
 
         Credits:
         - stacky
