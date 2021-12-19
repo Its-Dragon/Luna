@@ -873,7 +873,7 @@ Added Snapline Color (12/18/21)
 Added Head Dot Color (12/18/21)
 Added Sniper Crosshair Color (12/18/21)
 Added Line Style (12/18/21) | Note: Only static works currently
-Changed Line Color (12/18/21)
+Changed Line Color Picker (12/18/21)
 Changed Background of "Light" Style (12/18/21)
 
         Credits:
