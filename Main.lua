@@ -37,16 +37,22 @@ local ref5 = gui.Reference( "Visuals", "Other", "Effects" )
 local ref6 = gui.Reference( "Misc", "Movement", "Jump" )
 local ref7 = gui.Reference( "Visuals", "Other", "Extra" )
 
-local style = gui.Combobox( ref3, "theme.luna.style", "Style", "Classic", "Modern", "Light", "Dark", "Hide" )
-local logo = gui.Combobox( ref3, "theme.luna.logo", "Logo", "Classic", "Blue", "Blue/Purple Gradient", "Purple Gradient", "White" )
-local linecolor = gui.ColorPicker( ref3, "linecolor", "Line", 255, 0, 206, 255 )
+local style = gui.Combobox( ref3, "style", "Style", "Classic", "Modern", "Light", "Dark", "Hide" )
+local logo = gui.Combobox( ref3, "logo", "Logo", "Classic", "Blue", "Blue/Purple Gradient", "Purple Gradient", "White" )
+local linestyle = gui.Combobox ( ref3, "linestyle", "Line Style", "Static", "Gradient")
+local linecolor = gui.ColorPicker( linestyle, "linecolor", "", 255, 0, 206, 255 )
+local gradientcolor1 = gui.ColorPicker( linestyle, "gradientcolor1", "", 255, 0, 206, 255 )
+local gradientcolor2 = gui.ColorPicker( linestyle, "gradientcolor2", "", 145, 0, 255, 255 )
 
 local sniperxhair = gui.Checkbox( ref7, "vis.xhair", "Sniper Crosshair", false )
 sniperxhair:SetDescription("Show crosshair for your sniper.")
+local sniperxhaircolor = gui.ColorPicker( sniperxhair, "vis.sniperxhaircolor", 255, 255, 255, 255)
 local headdotcheck = gui.Checkbox( ref4, "vis.headdot", "Head Dot", false )
 headdotcheck:SetDescription("Draws dot where players head is.")
+local headdotcolor = gui.ColorPicker ( headdotcheck, "vis.headdotcolor", 255, 255, 255, 255)
 local snaplinespos = gui.Combobox( ref4, "vis.snaplinespos", "Snaplines Position", "Off", "Top", "Center", "Bottom")
 snaplinespos:SetDescription("Draws lines to player.")
+local snaplinescolor = gui.ColorPicker( snaplinespos, "vis.snaplinecolor", 255, 255, 255, 255)
 local keystrokes = gui.Checkbox( ref7, "vis.keystrokes", "Keystrokes Indicator", false )
 keystrokes:SetDescription("Displays your keystrokes on screen.")
 local keystrokeXslider = gui.Slider( ref7, "vis.keystrokeXslider", "Keystrokes X", 130, 0, screenX )
@@ -97,6 +103,18 @@ local logo5 = http.Get( "https://cdn.discordapp.com/attachments/8943285699526041
 local logoimgRGBA1, logoimgWidth1, logoimgHeight1 = common.DecodePNG( logo5 )
 local logotexture5 = draw.CreateTexture( logoimgRGBA1, logoimgWidth1, logoimgHeight1 )
 
+local function linecolorstyle()
+    if linestyle:GetValue() == 0 then
+        linecolor:SetInvisible(false)
+        gradientcolor1:SetInvisible(true)
+        gradientcolor2:SetInvisible(true)
+    elseif linestyle:GetValue() == 1 then
+        linecolor:SetInvisible(true)
+        gradientcolor1:SetInvisible(false)
+        gradientcolor2:SetInvisible(false)
+    end
+end
+
 local function headdot()
     if gui.GetValue("esp.master") and headdotcheck:GetValue() then
         local players = entities.FindByClass( "CCSPlayer" )
@@ -108,7 +126,7 @@ local function headdot()
                 local x, y = client.WorldToScreen( player:GetHitboxPosition(0) )
                 draw.Color(0, 0, 0)
                 draw.OutlinedCircle( x, y, 2.5 )
-                draw.Color(255, 255, 255)
+                draw.Color(headdotcolor:GetValue())
                 draw.FilledCircle( x, y, 1.5 )
             end
         end
@@ -183,7 +201,7 @@ local function snaplines()
             local x, y = client.WorldToScreen( player:GetAbsOrigin() )
 
             if player:IsAlive() and player:GetTeamNumber() ~= localplayer:GetTeamNumber() and x ~= nil and y ~= nil then
-                draw.Color(255, 255, 255)
+                draw.Color(snaplinescolor:GetValue())
                 if snaplinespos:GetValue() == 1 then
                 draw.Line( x, y, CenterX, topY)
                 elseif snaplinespos:GetValue() == 2 then
@@ -402,7 +420,7 @@ local function info()
         elseif style:GetValue() == 2 then -- Light
             -- Box Stuff For Main Window
             -- Background
-            draw.Color( 255, 255, 255, 220 )
+            draw.Color( 255, 255, 255, 255 )
             draw.FilledRect( menuX, menuY, x+180, y+305 )
             -- Line
             draw.Color( linecolor:GetValue() )
@@ -741,7 +759,7 @@ local function CrosshairDraw()
 
     if sniperxhair:GetValue() and not is_scoped then
         if weapon_id == 9 or weapon_id == 11 or weapon_id == 38  or weapon_id == 40 then
-            draw.Color( 255, 255, 255, 255 )
+            draw.Color( sniperxhaircolor:GetValue() )
             draw.Line( CenterX-8, CenterY, CenterX+8, CenterY )
             draw.Line( CenterX, CenterY-8, CenterX, CenterY+8 )
             else return
@@ -801,6 +819,7 @@ callbacks.Register( "Draw", RainbowHUD );
 callbacks.Register( "Draw", UnlockInventory )
 callbacks.Register( "CreateMove", RecoilCrosshair )
 callbacks.Register( "CreateMove", ForceCrosshair )
+callbacks.Register( "Draw", linecolorstyle )
 callbacks.Register( "Unload", function()
     client.Command( "cl_hud_color " .. origcolor, true )
 end )
@@ -828,7 +847,7 @@ Added Retain Viewmodel (10/22/21)
 Fixed Most Errors (10/22/21)
 Added Main Menu Check (10/22/21)
 
-Changed Background of Modern Theme (11/17/21)
+Changed Background of "Modern" Style (11/17/21)
 
 Fixed Main Menu Check (11/18/21)
 
@@ -850,6 +869,12 @@ Added Recoil Crosshair (11/28/21)
 Added Inventory Unlock (11/28/21)
 
 Recoded Force Crosshair (12/18/21)
+Added Snapline Color (12/18/21)
+Added Head Dot Color (12/18/21)
+Added Sniper Crosshair Color (12/18/21)
+Added Line Style (12/18/21) | Note: Only static works currently
+Changed Line Color (12/18/21)
+Changed Background of "Light" Style (12/18/21)
 
         Credits:
         - stacky
