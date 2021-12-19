@@ -54,7 +54,13 @@ local keystrokeYslider = gui.Slider( ref7, "vis.keystrokeYslider", "Keystrokes Y
 local rainbowhudcheck = gui.Checkbox( ref7, "vis.rainbowhud", "Rainbow HUD", false )
 rainbowhudcheck:SetDescription("Cycles the colors of your HUD.")
 local rainbowhudslider = gui.Slider( ref7, "rainbowhud.interval", "Rainbow Hud Interval", 1, 0, 5, 0.05)
-rainbowhudslider:SetDescription("How fast the colors cycle.")
+rainbowhudslider:SetDescription("Speed to cycle colors.")
+local forcecrosshair = gui.Checkbox( ref7, "forcecrosshair", "Force Crosshair", false )
+forcecrosshair:SetDescription("Forces crosshair on snipers. (Risky)")
+local recoilcrosshair = gui.Checkbox( ref7, "recoilcrosshair", "Recoil Crosshair", false )
+recoilcrosshair:SetDescription("Makes your crosshair react to recoil. (Risky)")
+local inventoryunlock = gui.Checkbox( ref1, "inventoryunlock", "Inventory Unlock", false )
+inventoryunlock:SetDescription("Unlocks your inventory in casual.")
 
 local retainviewmodelcheck = gui.Checkbox( ref5, "vis.retainviewmodel", "Retain Viewmodel", false )
 retainviewmodelcheck:SetDescription("Retains your viewmodel when scoped.")
@@ -126,6 +132,36 @@ local function RainbowHUD()
         end
         if color > 9 then color = 1 end
     end
+end
+
+local function menu_weapon(var)
+    local w = var:match("%a+"):lower()
+    local w = w:find("heavy") and "hpistol" or w:find("auto") and "asniper" or w:find("submachine") and "smg" or w:find("light") and "lmg" or w
+    return w
+end
+
+-- Force Crosshair
+local function ForceCrosshair()
+    local weapon = menu_weapon(gui.GetValue("lbot.weapon.target"))
+    if forcecrosshair:GetValue() then
+        client.SetConVar( "weapon_debug_spread_show", 3, true )
+    else
+        client.SetConVar( "weapon_debug_spread_show", 0, true )
+    end
+end
+
+-- Recoil Crosshair
+local function RecoilCrosshair()
+	if recoilcrosshair:GetValue() then
+		client.SetConVar("cl_crosshair_recoil", 1, true)
+	else
+		client.SetConVar("cl_crosshair_recoil", 0, true)
+	end
+end
+
+-- Inventory Unlock (not pasted *wink wink*)
+local function UnlockInventory()
+	panorama.RunScript('LoadoutAPI.IsLoadoutAllowed = () => true');
 end
 
 local function snaplines()
@@ -249,12 +285,6 @@ callbacks.Register("CreateMove", function(cmd)
     end
 end)
 
-local function menu_weapon(var)
-    local w = var:match("%a+"):lower()
-    local w = w:find("heavy") and "hpistol" or w:find("auto") and "asniper" or w:find("submachine") and "smg" or w:find("light") and "lmg" or w
-    return w
-end
-
 function EventHook(Event)
 
     if Event:GetName() == "bomb_beginplant" then        
@@ -319,7 +349,7 @@ local function info()
     local CenterY = y1 / 2
 
     if lp == nil or style:GetValue() == 4 then 
-        draw.TextShadow( 5, 5, "Luna" )
+        draw.TextShadow( 5, 5, "autohop.exe" )
     else
         if style:GetValue() == 0 then -- Classic
             -- Box Stuff For Main Window
@@ -540,7 +570,7 @@ local function info()
     if lp == nil or style:GetValue() == 4 then
         return
     else
-        draw.TextShadow( x+15, y, "Luna" )
+        draw.TextShadow( x+15, y, "Luna" ) -- Ξ | XI
         draw.TextShadow( x+140, y, os.date("%H:%M") )
         draw.TextShadow( x, y+20, "Name: " .. name )
         draw.TextShadow( x, y+35, "UID: " .. uid )
@@ -763,13 +793,16 @@ callbacks.Register( "Draw", "CrosshairDraw", CrosshairDraw );
 callbacks.Register( "Draw", props );
 callbacks.Register( "CreateMove", create_move );
 callbacks.Register("FireGameEvent", "EventHookB", EventHook);
-callbacks.Register( "Draw", "HeadDot", headdot )
-callbacks.Register( "Draw", "Snaplines", snaplines )
-callbacks.Register( "CreateMove", viewmodeltoggle )
-callbacks.Register( "CreateMove", doorspam )
-callbacks.Register( "Draw", RainbowHUD )
+callbacks.Register( "Draw", "HeadDot", headdot );
+callbacks.Register( "Draw", "Snaplines", snaplines );
+callbacks.Register( "CreateMove", viewmodeltoggle );
+callbacks.Register( "CreateMove", doorspam );
+callbacks.Register( "Draw", RainbowHUD );
+callbacks.Register( "Draw", UnlockInventory )
+callbacks.Register( "CreateMove", RecoilCrosshair )
+callbacks.Register( "CreateMove", ForceCrosshair )
 callbacks.Register( "Unload", function()
-    client.Command( "cl_hud_color " .. orig, true )
+    client.Command( "cl_hud_color " .. origcolor, true )
 end )
 
 --[[ 
@@ -811,6 +844,12 @@ Added Door Spam (11/24/21)
 Added Rainbow HUD (11/24/21)
 Fixed error with "kills" value (11/24/21)
 Changed watermark with "Hide" style option (11/24/21)
+
+Added Force Crosshair (11/28/21)
+Added Recoil Crosshair (11/28/21)
+Added Inventory Unlock (11/28/21)
+
+Recoded Force Crosshair (12/18/21)
 
         Credits:
         - stacky
